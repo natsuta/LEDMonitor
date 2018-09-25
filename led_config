@@ -2,4 +2,16 @@
 
 menu(){
     echo "Welcome to the LED Configuration Menu!"
+    echo "======================================"
+    echo "Please select an LED to configure:"
+    count=1
+    folder=/sys/class/leds
+    for dir in $(ls $folder);
+    do 
+	echo $count. $dir
+	let count++
+
+    done
 }
+
+menu
