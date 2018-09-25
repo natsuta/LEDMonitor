@@ -20,16 +20,18 @@ menu(){
 
 #Script Entry Point is here
 while [ $quit -eq 0 ]; do
-menu
-read choice
-case $choice in
-	
-
-	$count)
-		quit=1;;
-	?)
-		echo "Invalid option entered. Please enter again."
-		echo ""
-esac
-
+    menu
+    read choice
+    if ((1<=$choice && $choice<=$count-1))
+	then
+	echo "test" $choice
+	echo ""
+    elif [ $choice -eq $count ]
+	then
+	quit=1
+    else
+	echo "Invalid option entered. Please enter again."
+	echo ""
+    fi
 done
+echo "Goodbye!"
