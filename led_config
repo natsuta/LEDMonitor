@@ -5,22 +5,24 @@ quit=0
 folder=/sys/class/leds
 declare -a folderarray
 menu(){
-    count=1
-    echo "Welcome to the LED Configuration Menu!"
-    echo "======================================"
-    echo "Please select an LED to configure:"
-    for dir in $(ls $folder);
-    do 
+	count=1
+	echo "Welcome to the LED Configuration Menu!"
+	echo "======================================"
+	echo "Please select an LED to configure:"
+	for dir in $(ls $folder);
+	do 
 		echo $count. $dir
 		folderarray[$count]=$dir
 		let count++
-    done
-    echo $count. "Quit"
+	done
+	echo $count. "Quit"
+	echo
 }
 
 submenu(){
 	subquit=0
 	while [ $subquit -eq 0 ]; do
+		ls
 		echo 
 		echo "======================================"
 		echo "What would you like to do with this LED?"
@@ -32,31 +34,42 @@ submenu(){
 		echo "6) quit to main menu"
 		echo "Please enter a number (1-6) for your choice: "
 		read choice
-		if
-			
-		elif [ $choice -eq 6 ]
-			then
-			quit=1
-		else
-			echo "Invalid option entered. Please enter again."
-			echo ""
-		fi
+		case $choice in 
+			1)
+				echo 1 | sudo tee brightness >/dev/null
+				echo ${PWD##*/} "turned on."
+				;;
+			2)
+				echo 0 | sudo tee brightness >/dev/null
+				echo ${PWD##*/} "turned off."
+				;;
+			6)
+				subquit=1
+				;;
+			?)
+				echo "Invalid option entered. Please enter again."
+				echo ""
+				;;
+		esac
+	done
 }
 
 #Script Entry Point is here
 while [ $quit -eq 0 ]; do
-    menu
-    read choice
-    if ((1<=$choice && $choice<=$count-1))
+	menu
+	read choice
+	if ((1<=$choice && $choice<=$count-1))
 		then
+		cd $folder
+		cd ${folderarray[$choice]}
 		submenu
 		echo ""
-    elif [ $choice -eq $count ]
+	elif [ $choice -eq $count ]
 		then
 		quit=1
-    else
+	else
 		echo "Invalid option entered. Please enter again."
 		echo ""
-    fi
+	fi
 done
 echo "Goodbye!"
