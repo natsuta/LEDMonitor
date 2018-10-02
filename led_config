@@ -44,6 +44,12 @@ submenu(){
 				echo ${PWD##*/} "turned off."
 				echo
 				;;
+			3)
+				ls
+				cd "trigger"
+				syseventmenu
+				echo
+				;;
 			6)
 				subquit=1
 				;;
@@ -52,6 +58,44 @@ submenu(){
 				echo ""
 				;;
 		esac
+	done
+}
+
+syseventmenu(){
+	declare -a syseventarray
+	syseventquit=0
+	while [ $syseventquit -eq 0 ]; do
+		count=1
+		for trigger in $(cat trigger);
+		do 
+			echo $count. $trigger
+			syseventarray[$count]=$trigger
+			let count++
+		done
+		echo $count. "Quit"
+		read choice
+		echo
+		if ((1<=$choice && $choice<=$count-1))
+			then
+			for i in ${syseventarray[$i]}; do
+				if (($choice==1))
+					then
+					echo "[none] "
+					continue
+				elif (($i==$choice))
+					then
+					echo ${syseventarray[$i]}"*" >trigger
+					continue
+				fi
+				echo ${syseventarray[$i]} >trigger
+			done
+		elif [ $choice -eq $count ]
+			then
+			quit=1
+		else
+			echo "Invalid option entered. Please enter again."
+			echo
+		fi
 	done
 }
 
