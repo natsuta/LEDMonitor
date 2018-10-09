@@ -71,35 +71,14 @@ submenu(){
 
 syseventmenu(){
 	count=1
-	pagestop=$(tput lines)
-	syseventquit=0
-	for trigger in $(cat trigger); do
+	for trigger in $(cat trigger);
+	do 
+		echo $count. $trigger
 		syseventarray[$count]=$trigger
 		let count++
 	done
-
-	while [ $syseventquit -eq 0 ]; do
-		for i in `seq 1 $count`; do
-			echo $i. $trigger
-			if (($i == $pagestop-2) && ($count > $i))		
-				more = $i++
-				echo $count. "More"
-				exit = $i++
-				echo $i. "Quit"
-
-				read choice
-				if [ $choice -eq $more ]
-
-				elif [ $choice -eq $exit ]
-				    syseventquit =1
-
-				fi
-			else
-				break
-			fi
-		done
-	done
 	echo $count. "Quit"
+	read choice
 	echo
 	if ((1<=$choice && $choice<=$count-1))
 		then
