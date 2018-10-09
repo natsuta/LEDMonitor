@@ -94,7 +94,17 @@ syseventmenu(){
 }
 
 processmenu(){
-	
+	echo "Associate LED with the performance of a process"
+	echo "-----------------------------------------------"
+	echo "Please enter the name of the program to monitor"
+	echo "(partial names are ok):"
+	read program
+	for prog in (ps | awk '{if (NR!=1) { print $4 }}'); do
+		if (($prog == $program))
+			then
+			echo $program
+		fi
+	done
 }
 
 
