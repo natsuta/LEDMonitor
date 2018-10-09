@@ -2,8 +2,10 @@
 
 count=1
 quit=0
+dir=cd $(dirname $(readlink -f $0))
 folder=/sys/class/leds
 declare -a folderarray
+
 menu(){
 	count=1
 	echo "Welcome to the LED Configuration Menu!"
@@ -33,7 +35,7 @@ submenu(){
 		echo "Please enter a number (1-6) for your choice: "	
 		read choice
 		echo
-		case $choice in 
+		case $choice in
 			1)
 				echo 1 | sudo tee brightness >/dev/null
 				echo ${PWD##*/} "turned on."
@@ -45,10 +47,16 @@ submenu(){
 				echo
 				;;
 			3)
-				ls
-				cd "trigger"
 				syseventmenu
 				echo
+				;;
+			4)
+				dirname "$(readlink -f "$0")"
+				cd $0
+				source ./led_monitor
+				;;
+			5)
+				kill ./led_monitor
 				;;
 			6)
 				subquit=1
@@ -62,41 +70,47 @@ submenu(){
 }
 
 syseventmenu(){
-	declare -a syseventarray
+	count=1
+	pagestop=$(tput lines)
 	syseventquit=0
-	while [ $syseventquit -eq 0 ]; do
-		count=1
-		for trigger in $(cat trigger);
-		do 
-			echo $count. $trigger
-			syseventarray[$count]=$trigger
-			let count++
-		done
-		echo $count. "Quit"
-		read choice
-		echo
-		if ((1<=$choice && $choice<=$count-1))
-			then
-			for i in ${syseventarray[$i]}; do
-				if (($choice==1))
-					then
-					echo "[none] "
-					continue
-				elif (($i==$choice))
-					then
-					echo ${syseventarray[$i]}"*" >trigger
-					continue
-				fi
-				echo ${syseventarray[$i]} >trigger
-			done
-		elif [ $choice -eq $count ]
-			then
-			quit=1
-		else
-			echo "Invalid option entered. Please enter again."
-			echo
-		fi
+	for trigger in $(cat trigger); do
+		syseventarray[$count]=$trigger
+		let count++
 	done
+
+	while [ $syseventquit -eq 0 ]; do
+		for i in `seq 1 $count`; do
+			echo $i. $trigger
+			if (($i == $pagestop-2) && ($count > $i))		
+				more = $i++
+				echo $count. "More"
+				exit = $i++
+				echo $i. "Quit"
+
+				read choice
+				if [ $choice -eq $more ]
+
+				elif [ $choice -eq $exit ]
+				    syseventquit =1
+
+				fi
+			else
+				break
+			fi
+		done
+	done
+	echo $count. "Quit"
+	echo
+	if ((1<=$choice && $choice<=$count-1))
+		then
+		echo ${syseventarray[$choice]} | sudo tee trigger >/dev/null
+	elif [ $choice -eq $count ]
+		then
+		syseventquit=1
+	else
+		echo "Invalid option entered. Please enter again."
+		echo
+	fi
 }
 
 #Script Entry Point is here
