@@ -51,9 +51,10 @@ submenu(){
 				echo
 				;;
 			4)
-				dirname "$(readlink -f "$0")"
-				cd $0
-				source ./led_monitor
+				processmenu
+				#dirname "$(readlink -f "$0")"
+				#cd $0
+				#source ./led_monitor
 				;;
 			5)
 				kill ./led_monitor
@@ -91,6 +92,11 @@ syseventmenu(){
 		echo
 	fi
 }
+
+processmenu(){
+	
+}
+
 
 #Script Entry Point is here
 while [ $quit -eq 0 ]; do
