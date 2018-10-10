@@ -1,1 +1,7 @@
-ps
+while : ; do
+	ps
+	echo 1 | sudo tee brightness >/dev/null
+	sleep 5
+	echo 0 | sudo tee brightness >/dev/null
+	sleep 5
+done

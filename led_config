@@ -2,7 +2,7 @@
 
 count=1
 quit=0
-dir=cd $(dirname $(readlink -f $0))
+dir=$(dirname $(readlink -f $0))
 folder=/sys/class/leds
 declare -a folderarray
 
@@ -23,7 +23,7 @@ menu(){
 submenu(){
 	subquit=0
 	while [ $subquit -eq 0 ]; do
-		echo ${PWD##*/}
+		echo ${1##*/}
 		echo "======================================"
 		echo "What would you like to do with this LED?"
 		echo "1) turn on"
@@ -37,23 +37,23 @@ submenu(){
 		echo
 		case $choice in
 			1)
-				echo 1 | sudo tee brightness >/dev/null
+				echo 1 | sudo tee $1/brightness >/dev/null
 				echo ${PWD##*/} "turned on."
 				echo
 				;;
 			2)
-				echo 0 | sudo tee brightness >/dev/null
+				echo 0 | sudo tee $1/brightness >/dev/null
 				echo ${PWD##*/} "turned off."
 				echo
 				;;
 			3)
-				syseventmenu
+				syseventmenu $1
 				echo
 				;;
 			4)
+				echo $dir
+				cd $dir
 				processmenu
-				#dirname "$(readlink -f "$0")"
-				#cd $0
 				#source ./led_monitor
 				;;
 			5)
@@ -72,7 +72,7 @@ submenu(){
 
 syseventmenu(){
 	count=1
-	for trigger in $(cat trigger);
+	for trigger in $(cat $1/trigger);
 	do 
 		echo $count. $trigger
 		syseventarray[$count]=$trigger
@@ -83,7 +83,7 @@ syseventmenu(){
 	echo
 	if ((1<=$choice && $choice<=$count-1))
 		then
-		echo ${syseventarray[$choice]} | sudo tee trigger >/dev/null
+		echo ${syseventarray[$choice]} | sudo tee $1/trigger >/dev/null
 	elif [ $choice -eq $count ]
 		then
 		syseventquit=1
@@ -94,15 +94,28 @@ syseventmenu(){
 }
 
 processmenu(){
+	processcount=0
+	declare -a procduparray
 	echo "Associate LED with the performance of a process"
 	echo "-----------------------------------------------"
 	echo "Please enter the name of the program to monitor"
 	echo "(partial names are ok):"
 	read program
 	for prog in $(ps | awk '{ print $4 }' | sed 1,1d); do
-		if (($prog == $program))
+		if [ "${prog,,}" == *"${program}"* ]
 			then
+			let processcount++
+			procduparray[$processcount]=$prog
 			echo $prog
+		fi
+		if (($processcount >1 ))
+			then
+			echo
+		elif (($processcount == 1))
+			then
+			echo
+		else
+			echo "Program not found."
 		fi
 	done
 }
@@ -115,9 +128,7 @@ while [ $quit -eq 0 ]; do
 	echo
 	if ((1<=$choice && $choice<=$count-1))
 		then
-		cd $folder
-		cd ${folderarray[$choice]}
-		submenu
+		submenu $folder/${folderarray[$choice]}
 	elif [ $choice -eq $count ]
 		then
 		quit=1
