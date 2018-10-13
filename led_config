@@ -2,9 +2,9 @@
 
 count=1
 quit=0
-dir=$(dirname $(readlink -f $0))
 folder=/sys/class/leds
 declare -a folderarray
+trap '' 2
 
 menu(){
 	count=1
@@ -52,11 +52,12 @@ submenu(){
 				echo
 				;;
 			4)
+				pkill -f led_monitor
 				processmenu $1
-				source ./led_monitor $1 &>/dev/null &
 				;;
 			5)
-				ps -aux | grep led_monitor
+				pkill -f led_monitor
+				echo "Background monitoring stopped."
 				;;
 			6)
 				subquit=1
@@ -112,6 +113,7 @@ processmenu(){
 			echo
 		elif (($processcount == 1))
 			then
+				source ./led_monitor $prog &>/dev/null &
 			echo
 		else
 			echo "Program not found."
