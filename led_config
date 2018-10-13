@@ -45,7 +45,6 @@ submenu(){
 			2)
 				echo 0 | sudo tee $1/brightness >/dev/null
 				echo $leddesig "turned off."
-				echo
 				;;
 			3)
 				syseventmenu $1
@@ -53,10 +52,13 @@ submenu(){
 				;;
 			4)
 				pkill -f led_monitor
+				echo 0 | sudo tee $1/brightness >/dev/null
+				echo none | sudo tee $1/trigger >/dev/null
 				processmenu $1
 				;;
 			5)
 				pkill -f led_monitor
+				echo 0 | sudo tee $1/brightness >/dev/null
 				echo "Background monitoring stopped."
 				;;
 			6)
@@ -101,24 +103,35 @@ processmenu(){
 	echo "Please enter the name of the program to monitor"
 	echo "(partial names are ok):"
 	read program
-	for prog in $(ps --no-headers | awk '{ print $4 }'); do
+	echo "Do you wish to:"
+	echo "1) monitor memory"
+	echo "2) monitor CPU?"
+	read choice1
+	for prog in $(ps --no-headers -C $program | awk '{ print $4 }'); do
 		if [[ "${program,,}" == "${prog}"* ]];
-			then
+		then
 			let processcount++
 			procduparray[$processcount]=$prog
 			echo $prog
 		fi
-		if (($processcount >1 ))
-			then
-			echo
-		elif (($processcount == 1))
-			then
-				source ./led_monitor $prog &>/dev/null &
-			echo
-		else
-			echo "Program not found."
-		fi
 	done
+	if (($processcount >1 ))
+		then
+			echo "Name Conflict"
+			echo "-------------"
+			echo "This program has detected a name conflict."
+			echo "Select which program to monitor:"
+			
+			
+			
+		echo
+	elif (($processcount == 0))
+		then
+			echo "Program not found."
+	fi
+	
+	source ./led_monitor $1 $prog $choice1 &>/dev/null &
+	
 }
 
 

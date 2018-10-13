@@ -1,7 +1,16 @@
+#!/bin/bash
+func = ps -Hau | grep "$2"
+
 while : ; do
-	ps
+	if (( $3 == 1 ))
+		then
+			time = $func | awk '{print $4}'
+	elif (( $3 == 2))
+		then
+			time = $func | awk '{print $3}'
+	fi
 	echo 1 | sudo tee $1/brightness >/dev/null
-	sleep 5
+	sleep $time
 	echo 0 | sudo tee $1/brightness >/dev/null
 	sleep 5
 done
