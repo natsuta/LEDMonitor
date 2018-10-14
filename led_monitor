@@ -1,16 +1,17 @@
 #!/bin/bash
-func = ps -Hau | grep "$2"
 
 while : ; do
-	if (( $3 == 1 ))
+	if (( "$3" == 1 ))
 		then
-			time = $func | awk '{print $4}'
-	elif (( $3 == 2))
+			gettime=$(ps -Hau | grep $2 | awk '{sum += $4} END {print sum}')
+	elif (( "$3" == 2))
 		then
-			time = $func | awk '{print $3}'
+			gettime=$(ps -Hau | grep $2 | awk '{sum += $4} END {print sum}')
 	fi
-	echo 1 | sudo tee $1/brightness >/dev/null
-	sleep $time
-	echo 0 | sudo tee $1/brightness >/dev/null
-	sleep 5
-done
+	ontime=$(echo $gettime/100 | bc -l)
+	offtime=$(echo '(100 - ontime)/100' | bc -l)
+	echo 1 | sudo tee "$1"/brightness >/dev/null
+	sleep $ontime
+	echo 0 | sudo tee "$1"/brightness >/dev/null
+	sleep $offtime
+done 

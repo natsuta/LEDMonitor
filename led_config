@@ -11,7 +11,7 @@ menu(){
 	echo "Welcome to the LED Configuration Menu!"
 	echo "======================================"
 	echo "Please select an LED to configure:"
-	for dir in $(ls $folder);
+	for dir in $folder/*;
 	do 
 		echo $count. $dir
 		folderarray[$count]=$dir
@@ -51,13 +51,13 @@ submenu(){
 				echo
 				;;
 			4)
-				pkill -f led_monitor
+				kill %1
 				echo 0 | sudo tee $1/brightness >/dev/null
 				echo none | sudo tee $1/trigger >/dev/null
 				processmenu $1
 				;;
 			5)
-				pkill -f led_monitor
+				kill %1
 				echo 0 | sudo tee $1/brightness >/dev/null
 				echo "Background monitoring stopped."
 				;;
@@ -72,29 +72,35 @@ submenu(){
 	done
 }
 
+#Associate LED with a system event
 syseventmenu(){
-	count=1
-	for trigger in $(cat $1/trigger);
-	do 
-		echo $count. $trigger
-		syseventarray[$count]=$trigger
-		let count++
-	done
-	echo $count. "Quit"
-	read choice
-	echo
-	if ((1<=$choice && $choice<=$count-1))
-		then
-		echo ${syseventarray[$choice]} | sudo tee $1/trigger >/dev/null
-	elif [ $choice -eq $count ]
-		then
-		syseventquit=1
-	else
-		echo "Invalid option entered. Please enter again."
+	syseventquit=0
+	while [ $syseventquit -eq 0 ]; do
+		count=1
+		for trigger in $(cat $1/trigger);
+		do 
+			echo $count. $trigger
+			syseventarray[$count]=$trigger
+			let count++
+		done
+		echo $count. "Quit"
+		read choice
 		echo
-	fi
+		if ((1<=$choice && $choice<=$count-1))
+			then
+			echo ${syseventarray[$choice]} | sudo tee $1/trigger >/dev/null
+			syseventquit=1
+		elif [ $choice -eq $count ]
+			then
+			syseventquit=1
+		else
+			echo "Invalid option entered. Please enter again."
+			echo
+		fi
+	done
 }
 
+#Associate LED with the performance of a process
 processmenu(){
 	processcount=0
 	declare -a procduparray
@@ -121,17 +127,17 @@ processmenu(){
 			echo "-------------"
 			echo "This program has detected a name conflict."
 			echo "Select which program to monitor:"
-			
-			
-			
-		echo
+			for index in ${!procduparray[*]}
+			do
+				printf "%d: %s\n" $index ${procduparray[$index]}
+			done
+			read choice2
+			procduparray[$choice2]=$prog
 	elif (($processcount == 0))
 		then
 			echo "Program not found."
 	fi
-	
-	source ./led_monitor $1 $prog $choice1 &>/dev/null &
-	
+	source ./led_monitor $1 $prog $choice1 &
 }
 
 
@@ -142,7 +148,7 @@ while [ $quit -eq 0 ]; do
 	echo
 	if ((1<=$choice && $choice<=$count-1))
 		then
-		submenu $folder/${folderarray[$choice]}
+		submenu ${folderarray[$choice]}
 	elif [ $choice -eq $count ]
 		then
 		quit=1
